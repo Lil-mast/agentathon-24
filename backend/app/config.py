@@ -18,6 +18,10 @@ class Config:
     BQ_DATASET = os.environ.get("BQ_DATASET", "county_budget")
     BQ_LOCATION = os.environ.get("BQ_LOCATION", "US")
 
+    # Vertex AI requires a specific region (e.g. us-central1, not the "us"
+    # multi-region used by Document AI). Override if you need a different one.
+    VERTEX_LOCATION = os.environ.get("VERTEX_LOCATION", "us-central1")
+
     EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "text-embedding-004")
     EMBEDDING_DIMENSIONS = int(os.environ.get("EMBEDDING_DIMENSIONS", "768"))
 

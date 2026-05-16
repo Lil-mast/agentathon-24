@@ -217,25 +217,15 @@ def vector_search(
     client = _client()
     table_ref = _table_ref(CHUNKS_TABLE)
 
-    # We always wrap the base table in a CTE: when ward is given we filter
-    # there, otherwise we pass it through unchanged. Keeping one query shape
-    # makes the param list stable and the plan easy to read.
+    # VECTOR_SEARCH's first argument must be either a TABLE reference or a
+    # SELECT-with-WHERE subquery; CTEs are not allowed. Use TABLE when there
+    # is no filter, subquery when there is.
     if ward is not None:
-        base_cte = f"""
-            SELECT *
-            FROM `{table_ref}`
-            WHERE ward = @ward
-        """
+        table_arg = f"(SELECT * FROM `{table_ref}` WHERE ward = @ward)"
     else:
-        base_cte = f"""
-            SELECT *
-            FROM `{table_ref}`
-        """
+        table_arg = f"TABLE `{table_ref}`"
 
     sql = f"""
-        WITH base AS (
-            {base_cte}
-        )
         SELECT
             base.chunk_id      AS chunk_id,
             base.page_number   AS page_number,
@@ -244,7 +234,7 @@ def vector_search(
             base.text          AS text,
             distance           AS distance
         FROM VECTOR_SEARCH(
-            TABLE base,
+            {table_arg},
             'embedding',
             (SELECT @query_embedding AS embedding),
             top_k => @top_k,

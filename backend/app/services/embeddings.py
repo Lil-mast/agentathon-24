@@ -72,13 +72,13 @@ def _get_model():
 
     vertexai.init(
         project=Config.GCP_PROJECT_ID,
-        location=Config.GCP_LOCATION,
+        location=Config.VERTEX_LOCATION,
     )
     logger.info(
         "Loading Vertex AI embedding model %s in %s/%s",
         Config.EMBEDDING_MODEL,
         Config.GCP_PROJECT_ID,
-        Config.GCP_LOCATION,
+        Config.VERTEX_LOCATION,
     )
     _model = TextEmbeddingModel.from_pretrained(Config.EMBEDDING_MODEL)
     return _model
