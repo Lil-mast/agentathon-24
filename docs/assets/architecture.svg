@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" role="img" aria-label="Architecture diagram">
+  <defs>
+    <linearGradient id="lane1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFF6E8"/>
+      <stop offset="1" stop-color="#F8E2BE"/>
+    </linearGradient>
+    <linearGradient id="lane2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FBEAD6"/>
+      <stop offset="1" stop-color="#F1C99A"/>
+    </linearGradient>
+    <linearGradient id="lane3" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#F4DCBC"/>
+      <stop offset="1" stop-color="#E4B181"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5B3618"/>
+    </marker>
+    <style>
+      .lane-label { font: 700 18px ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #5B3618; }
+      .lane-sub   { font: 500 13px ui-sans-serif, system-ui; fill: #7B5A36; }
+      .box-title  { font: 700 15px ui-sans-serif, system-ui; fill: #3B2412; }
+      .box-sub    { font: 500 12px ui-sans-serif, system-ui; fill: #6B4A28; }
+      .edge-label { font: 600 11px ui-sans-serif, system-ui; fill: #5B3618; }
+      .pill       { fill: #F7E7CE; stroke: #B07A40; stroke-width: 1.4; }
+      .pill-strong{ fill: #FFFFFF; stroke: #8B4513; stroke-width: 1.6; }
+      .pill-out   { fill: #FFEFD5; stroke: #8B4513; stroke-width: 1.6; }
+    </style>
+  </defs>
+
+  <!-- swim lanes -->
+  <rect x="0"   y="40"  width="1200" height="180" fill="url(#lane1)"/>
+  <rect x="0"   y="220" width="1200" height="180" fill="url(#lane2)"/>
+  <rect x="0"   y="400" width="1200" height="200" fill="url(#lane3)"/>
+
+  <!-- lane labels -->
+  <text x="24" y="72"  class="lane-label">PERSON 1  ·  Data ingest &amp; semantic search</text>
+  <text x="24" y="92"  class="lane-sub">PDF → chunks → embeddings → BigQuery → vector search</text>
+
+  <text x="24" y="252" class="lane-label">PERSON 3  ·  Citizen Q&amp;A agent</text>
+  <text x="24" y="272" class="lane-sub">React → Flask → Vertex AI Agent Builder → grounded answer</text>
+
+  <text x="24" y="432" class="lane-label">PERSON 2  ·  Amendment monitor &amp; SMS digests</text>
+  <text x="24" y="452" class="lane-sub">Cron → Gazette scrape → LLM classify → Africa's Talking SMS</text>
+
+  <!-- LANE 1: ingest -->
+  <g transform="translate(360,130)">
+    <rect width="150" height="60" rx="10" class="pill"/>
+    <text x="75" y="28" text-anchor="middle" class="box-title">Budget PDF</text>
+    <text x="75" y="46" text-anchor="middle" class="box-sub">PBB / CADP / Citizen</text>
+  </g>
+  <g transform="translate(540,130)">
+    <rect width="160" height="60" rx="10" class="pill"/>
+    <text x="80" y="28" text-anchor="middle" class="box-title">pdf_ingest + chunker</text>
+    <text x="80" y="46" text-anchor="middle" class="box-sub">pypdf · Doc AI fallback</text>
+  </g>
+  <g transform="translate(730,130)">
+    <rect width="170" height="60" rx="10" class="pill"/>
+    <text x="85" y="28" text-anchor="middle" class="box-title">Vertex embeddings</text>
+    <text x="85" y="46" text-anchor="middle" class="box-sub">text-embedding-004 · 768d</text>
+  </g>
+  <g transform="translate(930,130)">
+    <rect width="190" height="60" rx="10" class="pill-strong"/>
+    <text x="95" y="28" text-anchor="middle" class="box-title">BigQuery</text>
+    <text x="95" y="46" text-anchor="middle" class="box-sub">budget_chunks · VECTOR_SEARCH</text>
+  </g>
+
+  <!-- arrows lane 1 -->
+  <line x1="510" y1="160" x2="540" y2="160" stroke="#5B3618" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="700" y1="160" x2="730" y2="160" stroke="#5B3618" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="900" y1="160" x2="930" y2="160" stroke="#5B3618" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- LANE 2: agent -->
+  <g transform="translate(110,310)">
+    <rect width="140" height="60" rx="10" class="pill"/>
+    <text x="70" y="28" text-anchor="middle" class="box-title">React frontend</text>
+    <text x="70" y="46" text-anchor="middle" class="box-sub">county-work · Vite</text>
+  </g>
+  <g transform="translate(290,310)">
+    <rect width="180" height="60" rx="10" class="pill"/>
+    <text x="90" y="28" text-anchor="middle" class="box-title">/api/ask · /api/agent/chat</text>
+    <text x="90" y="46" text-anchor="middle" class="box-sub">Flask (Cloud Run)</text>
+  </g>
+  <g transform="translate(510,310)">
+    <rect width="170" height="60" rx="10" class="pill"/>
+    <text x="85" y="28" text-anchor="middle" class="box-title">/internal/search</text>
+    <text x="85" y="46" text-anchor="middle" class="box-sub">top-K chunks · citations</text>
+  </g>
+  <g transform="translate(720,310)">
+    <rect width="180" height="60" rx="10" class="pill"/>
+    <text x="90" y="28" text-anchor="middle" class="box-title">Vertex AI Agent</text>
+    <text x="90" y="46" text-anchor="middle" class="box-sub">Reasoning Engine · Gemini</text>
+  </g>
+  <g transform="translate(940,310)">
+    <rect width="180" height="60" rx="10" class="pill-out"/>
+    <text x="90" y="28" text-anchor="middle" class="box-title">Grounded answer</text>
+    <text x="90" y="46" text-anchor="middle" class="box-sub">EN / SW · page citations</text>
+  </g>
+
+  <line x1="250" y1="340" x2="290" y2="340" stroke="#5B3618" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="470" y1="340" x2="510" y2="340" stroke="#5B3618" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="680" y1="340" x2="720" y2="340" stroke="#5B3618" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="900" y1="340" x2="940" y2="340" stroke="#5B3618" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- internal search consumes from BQ (cross-lane arrow) -->
+  <path d="M 1025 190 C 1025 250, 595 250, 595 310" stroke="#5B3618" stroke-width="1.6" fill="none" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+  <text x="730" y="240" class="edge-label">VECTOR_SEARCH</text>
+
+  <!-- LANE 3: amendments / SMS -->
+  <g transform="translate(80,490)">
+    <rect width="160" height="60" rx="10" class="pill"/>
+    <text x="80" y="28" text-anchor="middle" class="box-title">Cloud Scheduler</text>
+    <text x="80" y="46" text-anchor="middle" class="box-sub">/internal/poll-gazette</text>
+  </g>
+  <g transform="translate(280,490)">
+    <rect width="160" height="60" rx="10" class="pill"/>
+    <text x="80" y="28" text-anchor="middle" class="box-title">Gazette scraper</text>
+    <text x="80" y="46" text-anchor="middle" class="box-sub">deduped by hash</text>
+  </g>
+  <g transform="translate(480,490)">
+    <rect width="180" height="60" rx="10" class="pill"/>
+    <text x="90" y="28" text-anchor="middle" class="box-title">Amendment detector</text>
+    <text x="90" y="46" text-anchor="middle" class="box-sub">Gemini JSON extract</text>
+  </g>
+  <g transform="translate(700,490)">
+    <rect width="170" height="60" rx="10" class="pill"/>
+    <text x="85" y="28" text-anchor="middle" class="box-title">Weekly digest</text>
+    <text x="85" y="46" text-anchor="middle" class="box-sub">/internal/send-digests</text>
+  </g>
+  <g transform="translate(910,490)">
+    <rect width="200" height="60" rx="10" class="pill-out"/>
+    <text x="100" y="28" text-anchor="middle" class="box-title">Citizens (SMS)</text>
+    <text x="100" y="46" text-anchor="middle" class="box-sub">Africa's Talking · ward-targeted</text>
+  </g>
+
+  <line x1="240" y1="520" x2="280" y2="520" stroke="#5B3618" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="440" y1="520" x2="480" y2="520" stroke="#5B3618" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="660" y1="520" x2="700" y2="520" stroke="#5B3618" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="870" y1="520" x2="910" y2="520" stroke="#5B3618" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- amendments back into BigQuery -->
+  <path d="M 570 490 C 570 430, 1025 430, 1025 190" stroke="#5B3618" stroke-width="1.6" fill="none" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+  <text x="820" y="420" class="edge-label">budget_amendments table</text>
+</svg>
