@@ -7,9 +7,9 @@ function App() {
       <nav className="navbar">
         <a href="/" className="logo">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
-          Budget Watchdog
+          WaziBudget
         </a>
         <div className="nav-links">
           <a href="#" className="nav-link">Home</a>
@@ -23,15 +23,14 @@ function App() {
         <section className="hero">
           <h1>Your County's Budget,<br />Demystified.</h1>
           <p>
-            We turn complex 400-page county budget PDFs into plain-language answers. 
-            Ask questions, monitor gazette amendments, and know exactly where your money goes.
+            Ask any question you have about a county budget and get a clear, concise answer in plain language.
           </p>
-          
+
           <div className="search-container">
-            <input 
-              type="text" 
-              className="search-input" 
-              placeholder="Ask about allocations in your ward..." 
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Ask about allocations in your ward [name of ward]..."
             />
             <button className="btn-primary search-btn">Ask AI</button>
           </div>
