@@ -43,3 +43,64 @@ backend/
 - Shared services live in `app/services/`. Don’t duplicate Gemini or BigQuery clients — import from there.
 - All config via env vars (see `.env.example`). No secrets in code.
 - BigQuery tables are the source of truth for chunks, subscribers, amendments, and SMS logs.
+
+## Setup
+
+Requires Python 3.11+ and a GCP project with Document AI, BigQuery, and Vertex AI enabled.
+
+1. Create and activate a virtualenv from inside `backend/`:
+
+   ```powershell
+   python -m venv .venv
+   .venv\Scripts\Activate.ps1     # Windows PowerShell
+   # or
+   source .venv/bin/activate      # macOS / Linux
+   ```
+
+2. Install dependencies:
+
+   ```
+   pip install -r requirements.txt
+   ```
+
+3. Copy `.env.example` to `.env` and fill in your GCP values:
+
+   ```
+   cp .env.example .env
+   ```
+
+4. Authenticate the local environment with Application Default Credentials:
+
+   ```
+   gcloud auth application-default login
+   ```
+
+## Run
+
+From inside `backend/`:
+
+```
+python wsgi.py
+```
+
+Smoke test:
+
+```
+curl http://localhost:8080/health
+# {"status":"ok"}
+```
+
+## Ingest a budget PDF
+
+(Implemented in section 4 of [`TASKS_PERSON_1.md`](TASKS_PERSON_1.md); the CLI below is the planned interface.)
+
+```
+python scripts/ingest_budget.py --pdf path/to/budget.pdf
+```
+
+## Endpoints
+
+| Method | Path | Owner | Status | Description |
+|--------|------|-------|--------|-------------|
+| GET | `/health` | person 1 | done | Liveness probe |
+| POST | `/internal/search` | person 1 | planned | Vector search over budget chunks; called by the agent layer |
