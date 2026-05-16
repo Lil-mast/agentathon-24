@@ -25,3 +25,11 @@ def generate_json(config: dict, prompt: str) -> dict[str, Any]:
         # Lightweight fallback for fenced JSON responses.
         cleaned = text.replace("```json", "").replace("```", "").strip()
         return json.loads(cleaned)
+
+
+def generate(prompt: str, chunks: list[dict] | None = None, lang: str = "en") -> str:
+    """Adapter used by routes/ask.py. `chunks` and `lang` are accepted for
+    signature parity; the grounding is already in `prompt` and lang is applied
+    by the postprocess step that runs after this call."""
+    from flask import current_app
+    return generate_text(current_app.config, prompt)
