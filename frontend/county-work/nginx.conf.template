@@ -4,17 +4,37 @@ server {
     root   /usr/share/nginx/html;
     index  index.html;
 
-    # gzip
     gzip on;
     gzip_types text/plain text/css application/javascript application/json image/svg+xml;
     gzip_min_length 256;
 
-    # SPA fallback
+    # Reverse-proxy /api/* and /health to the backend Cloud Run service.
+    # BACKEND_URL is provided as an env var at deploy time, e.g.
+    #   gcloud run deploy nbo-frontend --set-env-vars BACKEND_URL=https://nbo-backend-xxx.run.app
+    location /api/ {
+        proxy_pass         ${BACKEND_URL};
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $proxy_host;
+        proxy_set_header   X-Forwarded-Host  $host;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_read_timeout 60s;
+    }
+
+    location = /health {
+        proxy_pass         ${BACKEND_URL}/health;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $proxy_host;
+        proxy_set_header   X-Forwarded-Host  $host;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    # SPA: serve index.html for any unknown route
     location / {
         try_files $uri $uri/ /index.html;
     }
 
-    # Cache fingerprinted assets aggressively; HTML stays no-cache
+    # Cache fingerprinted assets; HTML stays fresh
     location ~* \.(?:js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|ico|webp)$ {
         expires 30d;
         add_header Cache-Control "public, max-age=2592000, immutable";
