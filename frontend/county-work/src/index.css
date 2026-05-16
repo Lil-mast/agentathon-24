@@ -111,6 +111,7 @@ body {
   margin-bottom: 1rem;
   background: linear-gradient(to right, var(--brand-primary), var(--accent));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   line-height: 1.1;
 }
