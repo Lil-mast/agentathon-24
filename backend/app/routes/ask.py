@@ -5,7 +5,7 @@ from pathlib import Path
 
 from flask import Blueprint, current_app, jsonify, request
 
-from app.services.llm import generate
+from app.services.llm import generate_text
 from app.services.postprocess import postprocess_answer
 from app.services.search_client import fetch_chunks
 
@@ -47,7 +47,7 @@ def _run_ask(question: str, ward: str | None, lang: str) -> dict:
     context = _format_context(chunks)
     prompt = template.format(context=context, question=question)
 
-    raw_answer = generate(prompt, chunks, lang=lang)
+    raw_answer = generate_text(current_app.config, prompt)
     answer = postprocess_answer(raw_answer, lang=lang)
 
     return {

@@ -1,8 +1,45 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './index.css';
 import { askBudget, subscribeSMS } from './api';
 
+const impactStats = [
+  ['17+', 'budget documents indexed'],
+  ['85', 'Nairobi wards covered'],
+  ['24/7', 'plain-language budget answers'],
+];
+
+const focusAreas = [
+  {
+    title: 'Ward Allocation Clarity',
+    text: "Understand what Nairobi's budget says about roads, markets, health centers, water, and other projects near you.",
+  },
+  {
+    title: 'Cited Public Answers',
+    text: 'Every response points back to the source pages so residents can verify the numbers instead of trusting a black box.',
+  },
+  {
+    title: 'Gazette Watch',
+    text: 'Track amendments and changes that can shift money after the budget is published.',
+  },
+  {
+    title: 'Offline Civic Access',
+    text: 'SMS digests keep residents informed even when they do not have reliable data or a laptop nearby.',
+  },
+];
+
+const eventCards = [
+  ['Budget Q&A Clinic', 'Every Monday', 'Ask about ward projects and get a cited answer in minutes.'],
+  ['Gazette Change Brief', 'Weekly watch', 'See which amendments could affect allocations in your area.'],
+  ['SMS Resident Digest', 'Monday morning', 'Short, practical updates for residents in English or Kiswahili.'],
+];
+
 function App() {
+  const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = window.localStorage.getItem('wazi-theme');
+    if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  });
   const [question, setQuestion] = useState('');
   const [ward, setWard] = useState('');
   const [lang, setLang] = useState('en');
@@ -16,6 +53,16 @@ function App() {
   const [subscribing, setSubscribing] = useState(false);
   const [subStatus, setSubStatus] = useState(null);
   const [subError, setSubError] = useState('');
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setLoading(false), 1400);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem('wazi-theme', theme);
+  }, [theme]);
 
   async function handleAsk(e) {
     e?.preventDefault();
@@ -60,61 +107,126 @@ function App() {
   }
 
   return (
-    <div className="app-container">
+    <>
+      {loading && (
+        <div className="loading-screen" role="status" aria-live="polite">
+          <div className="kenya-flag" aria-hidden="true">
+            <span className="flag-black" />
+            <span className="flag-white" />
+            <span className="flag-red" />
+            <span className="flag-white" />
+            <span className="flag-green" />
+            <span className="flag-shield" />
+          </div>
+          <p>Loading WaziBudget Kenya</p>
+        </div>
+      )}
+
+      <div className="app-container">
+      <div className="top-strip">
+        <span>Nairobi County public budget assistant</span>
+        <a href="#digest">Get weekly SMS updates</a>
+      </div>
+
       <nav className="navbar">
         <a href="/" className="logo">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-          </svg>
-          WaziBudget
+          <span className="logo-mark">WB</span>
+          <span>WaziBudget</span>
         </a>
         <div className="nav-links">
           <a href="#ask" className="nav-link">Ask</a>
-          <a href="#digest" className="nav-link">SMS Digest</a>
           <a href="#features" className="nav-link">Features</a>
+          <a href="#events" className="nav-link">Updates</a>
+          <a href="#digest" className="nav-link">SMS Digest</a>
         </div>
-        <a href="#ask" className="btn-primary">Get Started</a>
+        <div className="nav-actions">
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            <span className="theme-toggle-icon" aria-hidden="true">
+              {theme === 'dark' ? 'L' : 'D'}
+            </span>
+            {theme === 'dark' ? 'Light' : 'Dark'}
+          </button>
+          <a href="#ask" className="btn-primary nav-cta">Ask the budget</a>
+        </div>
       </nav>
 
       <main>
         <section className="hero" id="ask">
-          <h1>Your County's Budget,<br />Demystified.</h1>
-          <p>
-            Ask any question about Nairobi's county budget and get a clear, cited answer in plain language.
-          </p>
+          <div className="hero-copy">
+            <span className="eyebrow">Together, we make budgets readable</span>
+            <h1>Your County's Budget, Demystified.</h1>
+            <p>
+              Ask any question about Nairobi's county budget and get a clear, cited answer in plain language.
+            </p>
+            <div className="hero-actions">
+              <a href="#ask-form" className="btn-primary">Ask now</a>
+              <a href="#features" className="btn-secondary">See what it tracks</a>
+            </div>
+          </div>
 
-          <form className="search-container" onSubmit={handleAsk}>
-            <input
-              type="text"
-              className="search-input"
-              placeholder="e.g. How much was allocated to roads in Kasarani?"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              disabled={asking}
-            />
-            <button type="submit" className="btn-primary search-btn" disabled={asking || !question.trim()}>
-              {asking ? 'Asking...' : 'Ask AI'}
-            </button>
-          </form>
+          <aside className="hero-card glass">
+            <span className="hero-card-kicker">Resident desk</span>
+            <h2>Find the money behind local promises.</h2>
+    
+            <div className="hero-card-footer">
+              <span>60k+ residents can benefit</span>
+              <a href="#digest">Join digest</a>
+            </div>
+          </aside>
 
-          <div className="ask-options">
-            <input
-              type="text"
-              className="filter-input"
-              placeholder="Filter by ward (optional)"
-              value={ward}
-              onChange={(e) => setWard(e.target.value)}
-              disabled={asking}
-            />
-            <select
-              className="filter-input"
-              value={lang}
-              onChange={(e) => setLang(e.target.value)}
-              disabled={asking}
-            >
-              <option value="en">English</option>
-              <option value="sw">Kiswahili</option>
-            </select>
+          <div className="stats-row">
+            {impactStats.map(([value, label]) => (
+              <div className="stat-card" key={label}>
+                <strong>{value}</strong>
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="ask-desk glass" id="ask-form">
+            <div className="desk-heading">
+              <span className="eyebrow">Ask the public record</span>
+              <h2>What do you want to know?</h2>
+            </div>
+
+            <form className="search-container" onSubmit={handleAsk}>
+              <input
+                type="text"
+                className="search-input"
+                placeholder="e.g. How much was allocated to roads in Kasarani?"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                disabled={asking}
+              />
+              <button type="submit" className="btn-primary search-btn" disabled={asking || !question.trim()}>
+                {asking ? 'Asking...' : 'Ask AI'}
+              </button>
+            </form>
+
+            <div className="ask-options">
+              <input
+                type="text"
+                className="filter-input"
+                placeholder="Filter by ward (optional)"
+                value={ward}
+                onChange={(e) => setWard(e.target.value)}
+                disabled={asking}
+              />
+              <select
+                className="filter-input"
+                value={lang}
+                onChange={(e) => setLang(e.target.value)}
+                disabled={asking}
+              >
+                <option value="en">English</option>
+                <option value="sw">Kiswahili</option>
+              </select>
+            </div>
           </div>
 
           {askError && (
@@ -148,32 +260,57 @@ function App() {
         </section>
 
         <section className="features" id="features">
-          <div className="feature-card glass">
-            <div className="feature-icon">✨</div>
-            <h3 className="feature-title">Plain Language Q&amp;A</h3>
-            <p className="feature-text">
-              No more confusing jargon. The AI translates dense PBB lines into clear answers about projects in your ward, with page citations from the source PDF.
-            </p>
+          <div className="section-heading">
+            <span className="eyebrow">Leading the way to clearer budgets</span>
+            <h2>Built for residents who need answers, not spreadsheets.</h2>
           </div>
 
-          <div className="feature-card glass">
-            <div className="feature-icon">📜</div>
-            <h3 className="feature-title">Gazette Monitor</h3>
-            <p className="feature-text">
-              We continuously scan the Kenya Gazette. If an amendment changes a ward's allocation, it lands in our amendments feed within hours.
+          <div className="feature-grid">
+            {focusAreas.map((feature) => (
+              <div className="feature-card glass" key={feature.title}>
+                <div className="feature-icon" aria-hidden="true" />
+                <h3 className="feature-title">{feature.title}</h3>
+                <p className="feature-text">{feature.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="contribution-panel">
+          <div>
+            <span className="eyebrow">Powered by public data</span>
+            <h2>County finance should be easy to question.</h2>
+            <p>
+              WaziBudget turns long PDFs, gazette notices, and budget jargon into answers residents can use in meetings, forums, and everyday decisions.
             </p>
           </div>
+          <div className="raised-card">
+            <strong>0.00</strong>
+            <span>shillings required to ask a question</span>
+            <a href="#ask" className="btn-primary">Start asking</a>
+          </div>
+        </section>
 
-          <div className="feature-card glass">
-            <div className="feature-icon">📱</div>
-            <h3 className="feature-title">SMS Digests</h3>
-            <p className="feature-text">
-              No internet? No problem. Subscribe with your phone and ward to get weekly SMS updates on your area's top allocations in English or Swahili.
-            </p>
+        <section className="events" id="events">
+          <div className="section-heading centered">
+            <span className="eyebrow">Upcoming civic updates</span>
+            <h2>Stay close to the decisions that shape your ward.</h2>
+          </div>
+
+          <div className="event-list">
+            {eventCards.map(([title, date, text]) => (
+              <article className="event-card" key={title}>
+                <span>{date}</span>
+                <h3>{title}</h3>
+                <p>{text}</p>
+                <a href="#ask">Open desk</a>
+              </article>
+            ))}
           </div>
         </section>
 
         <section className="digest" id="digest">
+          <span className="eyebrow">Join the campaign for clarity</span>
           <h2 className="section-title">Get the weekly SMS digest</h2>
           <p className="section-sub">Enter your phone number and ward; we send a short summary every Monday morning.</p>
           <form className="subscribe-form glass" onSubmit={handleSubscribe}>
@@ -210,13 +347,14 @@ function App() {
           </form>
           {subStatus && (
             <p className="subscribe-status">
-              ✓ Subscribed {subStatus.phone} to {subStatus.ward} ({subStatus.language === 'sw' ? 'Kiswahili' : 'English'}).
+              Subscribed {subStatus.phone} to {subStatus.ward} ({subStatus.language === 'sw' ? 'Kiswahili' : 'English'}).
             </p>
           )}
-          {subError && <p className="subscribe-status error">⚠ {subError}</p>}
+          {subError && <p className="subscribe-status error">{subError}</p>}
         </section>
       </main>
-    </div>
+      </div>
+    </>
   );
 }
 
