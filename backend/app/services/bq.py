@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import io
+import json
 import logging
 from typing import Any
 
@@ -96,10 +98,11 @@ def ensure_dataset_and_tables() -> None:
 
 
 def insert_chunks(chunks: list[dict], doc_id: str) -> int:
-    """Insert chunk rows into budget_chunks, tagging each with doc_id.
+    """Insert chunk rows for `doc_id`, replacing any existing rows for that doc_id.
 
-    Returns the number of rows successfully submitted to the streaming buffer.
-    Raises RuntimeError if BigQuery reports any row-level errors.
+    Idempotent: re-running an ingest for the same PDF (same content-hash doc_id)
+    deletes the previous chunks for that doc_id before inserting the new ones,
+    so search results never contain duplicates. Returns the number of rows written.
     """
     if not chunks:
         return 0
@@ -125,30 +128,78 @@ def insert_chunks(chunks: list[dict], doc_id: str) -> int:
 
     client = _client()
     table_ref = _table_ref(CHUNKS_TABLE)
-    errors = client.insert_rows_json(table_ref, rows)
-    if errors:
-        logger.error("BigQuery insert_rows_json reported errors: %s", errors)
-        raise RuntimeError(f"Failed to insert chunks into {table_ref}: {errors}")
+
+    # Step 1: clear any prior chunks for this doc_id (DML, not streaming, so a
+    # subsequent batch load reads consistent state).
+    delete_job = client.query(
+        f"DELETE FROM `{table_ref}` WHERE doc_id = @doc_id",
+        job_config=bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("doc_id", "STRING", doc_id),
+            ]
+        ),
+    )
+    delete_job.result()
+    logger.info(
+        "Cleared %s existing chunks for doc_id=%s",
+        delete_job.num_dml_affected_rows or 0,
+        doc_id,
+    )
+
+    # Step 2: batch-load the new rows. Batch load (not streaming) avoids the
+    # streaming buffer, so the DELETE above and any later one see consistent state.
+    buf = io.BytesIO()
+    for row in rows:
+        buf.write((json.dumps(row) + "\n").encode("utf-8"))
+    buf.seek(0)
+
+    load_job = client.load_table_from_file(
+        buf,
+        table_ref,
+        job_config=bigquery.LoadJobConfig(
+            source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
+            write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
+        ),
+    )
+    load_job.result()
 
     logger.info("Inserted %d chunks into %s (doc_id=%s)", len(rows), table_ref, doc_id)
     return len(rows)
 
 
 def register_document(doc_id: str, source_url: str, version: str) -> None:
-    """Insert a single provenance row into budget_documents."""
+    """Register a document row in budget_documents. Idempotent on doc_id.
+
+    Re-runs update source_url, version, and ingested_at instead of duplicating
+    the row, so the CLI is safe to retry after a partial ingest failure.
+    """
     client = _client()
     table_ref = _table_ref(DOCUMENTS_TABLE)
-    rows = [
-        {
-            "doc_id": doc_id,
-            "source_url": source_url,
-            "version": version,
-        }
-    ]
-    errors = client.insert_rows_json(table_ref, rows)
-    if errors:
-        logger.error("BigQuery insert_rows_json reported errors: %s", errors)
-        raise RuntimeError(f"Failed to register document {doc_id}: {errors}")
+
+    sql = f"""
+        MERGE `{table_ref}` T
+        USING (SELECT @doc_id AS doc_id) S
+        ON T.doc_id = S.doc_id
+        WHEN MATCHED THEN
+            UPDATE SET
+                source_url = @source_url,
+                ingested_at = CURRENT_TIMESTAMP(),
+                version = @version
+        WHEN NOT MATCHED THEN
+            INSERT (doc_id, source_url, ingested_at, version)
+            VALUES (@doc_id, @source_url, CURRENT_TIMESTAMP(), @version)
+    """
+    job = client.query(
+        sql,
+        job_config=bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("doc_id", "STRING", doc_id),
+                bigquery.ScalarQueryParameter("source_url", "STRING", source_url),
+                bigquery.ScalarQueryParameter("version", "STRING", version),
+            ]
+        ),
+    )
+    job.result()
     logger.info("Registered document %s (version=%s)", doc_id, version)
 
 

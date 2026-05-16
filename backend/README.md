@@ -90,17 +90,17 @@ curl http://localhost:8080/health
 # {"status":"ok"}
 ```
 
-## Ingest a budget PDF
-
-(Implemented in section 4 of [`TASKS_PERSON_1.md`](TASKS_PERSON_1.md); the CLI below is the planned interface.)
-
-```
-python scripts/ingest_budget.py --pdf path/to/budget.pdf
-```
-
 ## Endpoints
 
 | Method | Path | Owner | Status | Description |
 |--------|------|-------|--------|-------------|
 | GET | `/health` | person 1 | done | Liveness probe |
-| POST | `/internal/search` | person 1 | planned | Vector search over budget chunks; called by the agent layer |
+| POST | `/internal/search` | person 1 | done | Vector search over budget chunks; called by the agent layer |
+
+## Per-person docs
+
+Operational details, ingest procedures, endpoint contracts, and deployment notes live per person:
+
+- Person 1 (data layer): [`TASKS_PERSON_1_README.md`](TASKS_PERSON_1_README.md)
+- Person 2 (agent + Q&A): see their own README once added
+- Person 3 (gazette monitor + SMS): see their own README once added
