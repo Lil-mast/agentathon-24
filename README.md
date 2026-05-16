@@ -19,6 +19,18 @@
 
 ---
 
+## Live demo
+
+| | URL |
+|---|---|
+| **Web app** | https://nbo-budget-frontend-1085978218679.us-central1.run.app |
+| **Backend API** | https://nbo-budget-backend-1085978218679.us-central1.run.app |
+| **Health check** | https://nbo-budget-backend-1085978218679.us-central1.run.app/health |
+
+Both services run on Cloud Run in `us-central1` (project `bwai-agentathon`). The frontend's nginx forwards `/api/*` to the backend, so the SPA calls same-origin.
+
+---
+
 ## Why this exists
 
 Kenya's county budget documents are PDFs running into hundreds of pages, written in finance-speak. A resident who wants to know how much was allocated to a road in their ward has to read line items, follow gazette amendments, and translate jargon, or just give up.
