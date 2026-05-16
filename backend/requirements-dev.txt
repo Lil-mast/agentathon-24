@@ -1,0 +1,3 @@
+# Dev/test only (pytest is also listed in requirements.txt for CI)
+-r requirements.txt
+pytest>=8.0.0
