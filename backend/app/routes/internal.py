@@ -1,29 +1,40 @@
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, request
 
-from app.services import local_search
+from app.services.amendments import detect_amendments_for_unprocessed
+from app.services.digest import send_weekly_digests
+from app.services.gazette import poll_and_store_latest_notices
+
 
 internal_bp = Blueprint("internal", __name__)
 
 
-@internal_bp.route("/internal/search", methods=["POST"])
-def internal_search():
-    """
-    Dev stub for Person 1's search API.
+def _authorized() -> bool:
+    expected = current_app.config.get("APP_INTERNAL_TOKEN", "")
+    if not expected:
+        return False
+    provided = request.headers.get("X-Internal-Token", "")
+    return provided == expected
 
-    Uses local TF-IDF over chunks.json when INTERNAL_SEARCH_MODE=local.
-    """
-    body = request.get_json(silent=True) or {}
-    query = (body.get("query") or body.get("question") or "").strip()
-    if not query:
-        return jsonify({"error": "query is required"}), 400
 
-    ward = body.get("ward")
-    top_k = int(body.get("top_k", current_app.config.get("SEARCH_TOP_K", 8)))
+def run_poll_gazette() -> dict:
+    poll_result = poll_and_store_latest_notices(current_app.config)
+    detect_result = detect_amendments_for_unprocessed(current_app.config)
+    return {"poll": poll_result, "detect": detect_result}
 
-    chunks = local_search.search(
-        query,
-        ward=ward,
-        top_k=top_k,
-        chunks_path=current_app.config["LOCAL_CHUNKS_PATH"],
-    )
-    return jsonify({"chunks": chunks, "count": len(chunks)})
+
+def run_send_digests() -> dict:
+    return send_weekly_digests(current_app.config)
+
+
+@internal_bp.post("/internal/poll-gazette")
+def poll_gazette_endpoint():
+    if not _authorized():
+        return {"error": "unauthorized"}, 401
+    return run_poll_gazette(), 200
+
+
+@internal_bp.post("/internal/send-digests")
+def send_digests_endpoint():
+    if not _authorized():
+        return {"error": "unauthorized"}, 401
+    return run_send_digests(), 200
