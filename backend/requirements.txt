@@ -1,0 +1,8 @@
+flask>=3.0.0
+google-cloud-aiplatform>=1.38.0
+vertexai>=1.38.0
+python-dotenv>=1.0.0
+pypdf>=4.0.0
+pytest>=8.0.0
+requests>=2.31.0
+gunicorn>=21.2.0
