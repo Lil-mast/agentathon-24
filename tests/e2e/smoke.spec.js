@@ -39,9 +39,11 @@ test.describe('Nairobi Budget Agent — live smoke', () => {
 
   test('subscribe form: shows an error for invalid phone (validates backend wiring)', async ({ page }) => {
     await page.goto('/#digest');
-    await page.getByPlaceholder(/\+2547/).fill('not-a-phone');
-    await page.getByPlaceholder(/ward/i).fill('Kasarani');
-    await page.getByRole('button', { name: /^subscribe/i }).click();
+    // Scope to the subscribe form so locators don't collide with the Q&A ward filter
+    const form = page.locator('.subscribe-form');
+    await form.getByPlaceholder(/\+2547/).fill('not-a-phone');
+    await form.getByPlaceholder(/^Ward \(/).fill('Kasarani');
+    await form.getByRole('button', { name: /^subscribe/i }).click();
 
     // The backend rejects non-E.164 phones with a 400; the UI surfaces it as a status line.
     const status = page.locator('.subscribe-status');
