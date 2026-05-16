@@ -1,12 +1,10 @@
+from __future__ import annotations
+
 from app import create_app
-
-app = create_app()
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+from app.config import Config
 
 app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(host=app.config["FLASK_HOST"], port=app.config["FLASK_PORT"], debug=app.config["FLASK_DEBUG"])
+    app.run(host="0.0.0.0", port=Config.PORT, debug=Config.DEBUG)
